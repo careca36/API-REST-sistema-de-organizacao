@@ -4,9 +4,17 @@ const bancoDeDados = require('../database/bancoDeDados')
 
 const STATUS_VALIDOS = ['pendente', 'em_andamento', 'concluida']
 
-//CREAT, cadastrar tarefa endpoint -> /tarefas
+// cadastrar tarefa
 router.post('/', (req, res) => {
   const { titulo, status, dataEntrega, materiaId } = req.body
+
+  if (!titulo || titulo.trim() === '') {
+    return res.status(400).json({ erro: 'Título é obrigatório' })
+  }
+
+  if (!dataEntrega || isNaN(new Date(dataEntrega))) {
+    return res.status(400).json({ erro: 'Data de entrega inválida' })
+  }
 
   if (!STATUS_VALIDOS.includes(status)) {
     return res.status(400).json({ erro: 'Status inválido' })
@@ -14,7 +22,7 @@ router.post('/', (req, res) => {
 
   const materiaExiste = bancoDeDados.materias.some(m => m.id === materiaId)
   if (!materiaExiste) {
-    return res.status(400).json({ erro: 'Materia não existe' })
+    return res.status(400).json({ erro: 'Matéria não existe' })
   }
 
   const tarefa = {
@@ -29,12 +37,12 @@ router.post('/', (req, res) => {
   res.status(201).json(tarefa)
 })
 
-//READ, listar endpoint -> /tarefas
+// listar tarefas
 router.get('/', (req, res) => {
   res.json(bancoDeDados.tarefas)
 })
 
-//UPDATE, atualizar endpoint -> /tarefas/:id
+// atualizar tarefa
 router.put('/:id', (req, res) => {
   const id = Number(req.params.id)
   const tarefa = bancoDeDados.tarefas.find(t => t.id === id)
@@ -45,14 +53,31 @@ router.put('/:id', (req, res) => {
 
   const { titulo, status, dataEntrega } = req.body
 
-  if (titulo) tarefa.titulo = titulo
-  if (status) tarefa.status = status
-  if (dataEntrega) tarefa.dataEntrega = dataEntrega
+  if (titulo !== undefined) {
+    if (titulo.trim() === '') {
+      return res.status(400).json({ erro: 'Título não pode ser vazio' })
+    }
+    tarefa.titulo = titulo
+  }
+
+  if (status !== undefined) {
+    if (!STATUS_VALIDOS.includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido' })
+    }
+    tarefa.status = status
+  }
+
+  if (dataEntrega !== undefined) {
+    if (isNaN(new Date(dataEntrega))) {
+      return res.status(400).json({ erro: 'Data de entrega inválida' })
+    }
+    tarefa.dataEntrega = dataEntrega
+  }
 
   res.json(tarefa)
 })
 
-//DELETE, remover endpoint -> /tarefas/:id
+// remover tarefa
 router.delete('/:id', (req, res) => {
   const id = Number(req.params.id)
   const index = bancoDeDados.tarefas.findIndex(t => t.id === id)
@@ -61,19 +86,18 @@ router.delete('/:id', (req, res) => {
     return res.status(404).json({ erro: 'Tarefa não encontrada' })
   }
 
-  const removida = bancoDeDados.tarefas[index]
   bancoDeDados.tarefas.splice(index, 1)
-
-  res.json(removida)
+  res.status(204).send()
 })
 
-//Tarefas Atrasadas 
+// tarefas atrasadas
 router.get('/atrasadas', (req, res) => {
   const hoje = new Date()
 
-  const atrasadas = bancoDeDados.tarefas.filter(t =>
-    new Date(t.dataEntrega) < hoje && t.status !== 'concluida'
-  )
+  const atrasadas = bancoDeDados.tarefas.filter(t => {
+    const entrega = new Date(t.dataEntrega)
+    return !isNaN(entrega) && entrega < hoje && t.status !== 'concluida'
+  })
 
   res.json(atrasadas)
 })
