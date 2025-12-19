@@ -1,0 +1,65 @@
+problema: api rest -> cadastro de materias
+tarefas -> vinculadas a materias 
+endpoints para consulta(resumo && atrasadas)
+
+
+
+express -> req, res nex(padrao middlware), respostas htpp:[
+    201 -> criar algo
+    200 -> buscar/ listar
+    204 -> remover
+    400 -> dado invalido
+    404 -> ID não existe
+]
+[
+    get: Buscar dados
+    post: Criar dados
+    put: Atualziar dados
+    delete: Remover dados
+    patch: Atualizar parcialmente
+    head: verificar existencia
+    options: Descobrir capacidades
+]
+
+
+
+
+// id -> para achar a matéria
+// titulo -> descrição da tarefa 
+// status -> concluida || pendente
+// data entrega -> sé está atrasada ou não 
+// materiaid -> chave da materia
+todos são obrigatórios 
+
+banco de dados em memoria, depois talvez integrar algum banco de dado, sqlite etc
+
+
+usar JSDoc ->
+ex: /**
+* @typedef { Object } Usuario
+* @property { Number } id
+* @property { String } nome
+* @property { Number } email
+*
+*/
+
+typedef = definir tipo
+property = campos do tipo
+
+/** @type {Usuario[]} */
+const usuarios = []         -> usuarios é um array que só aceita objetos do tipo usuario
+
+
+materia: id unico, nome
+
+tarefa: id unico, titulo, status, data entrega, referencia para a materia inserida
+
+server -> inciar servidor
+app -> express
+routes -> definir endpoints
+controller -> regras do negocio
+database -> banco de dados em memoria usando JSDoc
+
+
+// CRUD MATERIAS COMPLETO
+// CRUD TAREFAS COMPLETO
