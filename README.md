@@ -32,8 +32,10 @@ Update :  PUT /materias/:id -> atualiza a matéria
 Delete :  DELETE /materias/:id -> remove a matéria atribuída aquele id
 
 # TAREFAS
-C
-R
-U
-D
+Creat : POST /tarefas -> cadastrar uma tarefa em uma materia
+Read:   GET /tarefas -> lista todas tarefas cadastradas
+Update: PUT/tarefas/:id -> atualiza uma tarefa pelo id na url
+Delete: DELETE/tarefas/:id -> deleta tarefa pelo id na url
+
+ATRASADAS! GET/tarefas/atrasadas -> lista as tarefas com data de entrega vencida ou status não concluido
 # API-REST-sistema-de-organizacao
