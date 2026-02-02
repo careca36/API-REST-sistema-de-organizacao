@@ -3,22 +3,30 @@ const router = express.Router()
 const bancoDeDados = require('../database/bancoDeDados')
 
 // cadastrar matéria
-router.post('/', (req, res) => {
-  const { nome } = req.body
+router.post('/', async (req, res) => {
+  const { titulo, status, dataEntrega, materiaId } = req.body
 
-  if (!nome) {
-    return res.status(400).json({ erro: 'Nome da matéria é obrigatório' })
+  if (!titulo || titulo.trim() === '') {
+    return res.status(400).json({ erro: 'Título é obrigatório' })
   }
 
-  const novaMateria = {
-    id: bancoDeDados.materiaIdSequencia++,
-    nome
+  if (!STATUS_VALIDOS.includes(status)) {
+    return res.status(400).json({ erro: 'Status inválido' })
   }
 
-  bancoDeDados.materias.push(novaMateria)
-  res.status(201).json(novaMateria)
+  try {
+    const tarefa = await repo.criar({
+      titulo,
+      status,
+      dataEntrega,
+      materiaId
+    })
+
+    res.status(201).json(tarefa)
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message })
+  }
 })
-
 // listar matérias
 router.get('/', (req, res) => {
   res.json(bancoDeDados.materias)

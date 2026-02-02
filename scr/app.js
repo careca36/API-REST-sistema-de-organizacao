@@ -1,11 +1,13 @@
 const express = require('express')
-
-// configuração principal da aplicação
 const app = express()
 
 app.use(express.json())
 
-app.use('/materias', require('./routers/materiasRoutes'))
-app.use('/tarefas', require('./routers/tarefasRoutes'))
+app.get('/', (req, res) => {
+  res.json({ status: 'API rodando' })
+})
+
+const tarefasRoutes = require('./routers/tarefasRoutes')
+app.use('/tarefas', tarefasRoutes)
 
 module.exports = app
