@@ -1,85 +1,47 @@
-const repo = require('../repositorio/tarefasRepositorio')
+const tarefasRepositorio = require('../repositorio/tarefasRepositorio')
+const materiasRepositorio = require('../repositorio/materiasRepositorio')
 
-// CREATE
-async function criar(req, res) {
-  const { titulo, descricao } = req.body
+exports.criar = async (req, res) => {
+  const { titulo, descricao, status, materia_id, data_entrega } = req.body
 
-  if (!titulo || !descricao) {
-    return res.status(400).json({
-      erro: 'titulo e descricao são obrigatórios'
-    })
+  const materia = await materiasRepositorio.buscarPorId(materia_id)
+  if (!materia) {
+    return res.status(400).json({ erro: 'Matéria não existe' })
   }
 
-  try {
-    const tarefa = await repo.criarTarefa(titulo, descricao)
-    res.status(201).json(tarefa)
-  } catch (err) {
-    console.error('ERRO MYSQL 👉', err)
-    res.status(500).json({ erro: 'Erro ao criar tarefa' })
-  }
+  const tarefa = await tarefasRepositorio.criar(
+    titulo,
+    descricao,
+    status,
+    materia_id,
+    data_entrega
+  )
+
+  res.status(201).json(tarefa)
 }
 
-// READ
-async function listar(req, res) {
-  try {
-    const tarefas = await repo.listarTarefas()
-    res.json(tarefas)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ erro: 'Erro ao listar tarefas' })
-  }
+exports.listar = async (req, res) => {
+  res.json(await tarefasRepositorio.listar())
 }
 
-// UPDATE
-async function atualizar(req, res) {
-  const { id } = req.params
-  const { titulo, descricao } = req.body
-
-  if (!titulo || !descricao) {
-    return res.status(400).json({
-      erro: 'titulo e descricao são obrigatórios'
-    })
+exports.buscarPorId = async (req, res) => {
+  const tarefa = await tarefasRepositorio.buscarPorId(req.params.id)
+  if (!tarefa) {
+    return res.status(404).json({ erro: 'Tarefa não encontrada' })
   }
-
-  try {
-    const atualizado = await repo.atualizarTarefa(id, titulo, descricao)
-
-    if (!atualizado) {
-      return res.status(404).json({
-        erro: 'Tarefa não encontrada'
-      })
-    }
-
-    res.json({ mensagem: 'Tarefa atualizada com sucesso' })
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ erro: 'Erro ao atualizar tarefa' })
-  }
+  res.json(tarefa)
 }
 
-// DELETE
-async function deletar(req, res) {
-  const { id } = req.params
-
-  try {
-    const deletado = await repo.deletarTarefa(id)
-
-    if (!deletado) {
-      return res.status(404).json({
-        erro: 'Tarefa não encontrada'
-      })
-    }
-
-    res.json({ mensagem: 'Tarefa deletada com sucesso' })
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ erro: 'Erro ao deletar tarefa' })
-  }
+exports.atualizar = async (req, res) => {
+  await tarefasRepositorio.atualizar(req.params.id, req.body)
+  res.json({ mensagem: 'Tarefa atualizada' })
 }
 
-module.exports = {
-  criar,
-  listar,
-  atualizar,
-  deletar
+exports.deletar = async (req, res) => {
+  await tarefasRepositorio.deletar(req.params.id)
+  res.json({ mensagem: 'Tarefa removida' })
+}
+
+exports.atrasadas = async (req, res) => {
+  res.json(await tarefasRepositorio.atrasadas())
 }

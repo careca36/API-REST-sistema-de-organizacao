@@ -1,42 +1,56 @@
-const pool = require('../database/connection')
+const connection = require('../database/connection')
 
-function criarTarefa(titulo, descricao) {
-  return pool
-    .execute(
-      'INSERT INTO tarefas (titulo, descricao) VALUES (?, ?)',
-      [titulo, descricao]
-    )
-    .then(([result]) => ({
-      id: result.insertId,
-      titulo,
-      descricao
-    }))
+exports.criar = async (titulo, descricao, status, materia_id, data_entrega) => {
+  const [result] = await connection.query(
+    `INSERT INTO tarefas 
+     (titulo, descricao, status, materia_id, data_entrega)
+     VALUES (?, ?, ?, ?, ?)`,
+    [titulo, descricao, status, materia_id, data_entrega]
+  )
+
+  return { id: result.insertId, titulo, descricao, status, materia_id }
 }
 
-function listarTarefas() {
-  return pool
-    .execute('SELECT * FROM tarefas')
-    .then(([rows]) => rows)
+exports.listar = async () => {
+  const [rows] = await connection.query('SELECT * FROM tarefas')
+  return rows
 }
 
-function atualizarTarefa(id, titulo, descricao) {
-  return pool
-    .execute(
-      'UPDATE tarefas SET titulo = ?, descricao = ? WHERE id = ?',
-      [titulo, descricao, id]
-    )
-    .then(([result]) => result.affectedRows)
+exports.buscarPorId = async (id) => {
+  const [rows] = await connection.query(
+    'SELECT * FROM tarefas WHERE id = ?',
+    [id]
+  )
+  return rows[0]
 }
 
-function deletarTarefa(id) {
-  return pool
-    .execute('DELETE FROM tarefas WHERE id = ?', [id])
-    .then(([result]) => result.affectedRows)
+exports.atualizar = async (id, dados) => {
+  await connection.query(
+    'UPDATE tarefas SET titulo=?, descricao=?, status=? WHERE id=?',
+    [dados.titulo, dados.descricao, dados.status, id]
+  )
 }
 
-module.exports = {
-  criarTarefa,
-  listarTarefas,
-  atualizarTarefa,
-  deletarTarefa
+exports.deletar = async (id) => {
+  await connection.query('DELETE FROM tarefas WHERE id = ?', [id])
+}
+
+exports.atrasadas = async () => {
+  const [rows] = await connection.query(`
+    SELECT * FROM tarefas
+    WHERE data_entrega < CURDATE()
+    AND status != 'concluida'
+  `)
+  return rows
+}
+
+exports.resumoPorMateria = async (materiaId) => {
+  const [rows] = await connection.query(`
+    SELECT status, COUNT(*) as total
+    FROM tarefas
+    WHERE materia_id = ?
+    GROUP BY status
+  `, [materiaId])
+
+  return rows
 }

@@ -3,11 +3,14 @@ const app = express()
 
 app.use(express.json())
 
+const materiasRoutes = require('./routers/materiasRoutes')
+const tarefasRoutes = require('./routers/tarefasRoutes')
+
+app.use('/materias', materiasRoutes)
+app.use('/tarefas', tarefasRoutes)
+
 app.get('/', (req, res) => {
   res.json({ status: 'API rodando' })
 })
-
-const tarefasRoutes = require('./routers/tarefasRoutes')
-app.use('/tarefas', tarefasRoutes)
 
 module.exports = app
