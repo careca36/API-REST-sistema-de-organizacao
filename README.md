@@ -1,41 +1,96 @@
-* Desafio Técnico Vitor - API-REST
+# Desafio Técnico Vitor -- API REST (Sistema de Organização)
 
-projeto backend desenvolvido usando Node.js e Express com banco de dados local, em memória
+Projeto backend desenvolvido utilizando Node.js e Express, com banco de
+dados PostgreSQL, seguindo o padrão API REST.\
+A aplicação permite o gerenciamento de matérias e tarefas, incluindo
+CRUD completo, resumo por matéria e listagem de tarefas atrasadas.
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------
-# Tecnologias Usadas:
--Node.js
--Express
--Javascript
--Nodemon
--Postman
+------------------------------------------------------------------------
 
-# Estrutura do Projeto(Recomendada):
--scr/
-app.js
-server.js
-routers/materiasRoutes.js && tarefasROutes.js
-models/(não utlizada pois o projeto possuí banco de dados em memoria)
-database/bancoDeDados.js
+## Tecnologias Utilizadas
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------
-# Como executar o projeto:
+-   Node.js (v18)
+-   Express
+-   JavaScript
+-   PostgreSQL 
+-   Prisma ORM 
+-   Dotenv
+-   Nodemon
+-   Postman
+-   Git / GitHub
 
--1: instalar as depedencias: node, nodemon(dev), express
--2: iniciar o server com: node ./scr/server.js ou npm run dev(dev) -> servidor ficara disponivel na url http://localhost:3000
--3: no postman será possivel testar os endpoints:
+------------------------------------------------------------------------
 
-# MATERIAS
-Creat  :  POST /materias -> criar matéria
-Read   :  GET /materias -> listar matérias  ||  GET /materias/:id Busca matéria por id  || GET /materias/:id/resumo -> resumo das tarefas daquela tarefa
-Update :  PUT /materias/:id -> atualiza a matéria 
-Delete :  DELETE /materias/:id -> remove a matéria atribuída aquele id
+## Estrutura do Projeto
 
-# TAREFAS
-Creat : POST /tarefas -> cadastrar uma tarefa em uma materia
-Read:   GET /tarefas -> lista todas tarefas cadastradas
-Update: PUT/tarefas/:id -> atualiza uma tarefa pelo id na url
-Delete: DELETE/tarefas/:id -> deleta tarefa pelo id na url
+    .
+    ├── prisma
+    │   └── schema.prisma
+    ├── src
+    │   ├── app.js
+    │   ├── server.js
+    │   ├── routes
+    │   │   ├── materiasRoutes.js
+    │   │   └── tarefasRoutes.js
+    │   ├── controllers
+    │   │   ├── materiasController.js
+    │   │   └── tarefaController.js
+    │   └── database
+    │       └── prisma.js
+    ├── .env
+    ├── package.json
+    └── README.md
 
-ATRASADAS! GET/tarefas/atrasadas -> lista as tarefas com data de entrega vencida ou status não concluido
-# API-REST-sistema-de-organizacao
+------------------------------------------------------------------------
+
+## Como Executar o Projeto
+
+### 1. Instalar dependências
+
+    npm install
+
+### 2. Configurar banco de dados
+
+Criar banco PostgreSQL:
+
+    CREATE DATABASE organizacao;
+
+Arquivo `.env`:
+
+    DATABASE_URL="postgresql://usuario:12345678@localhost:5432/organizacao"
+    PORT=3000
+
+### 3. Prisma
+
+    npx prisma generate
+    npx prisma migrate dev --name init
+
+### 4. Executar servidor
+
+    npm run dev
+
+Servidor disponível em `http://localhost:3000`
+
+------------------------------------------------------------------------
+
+## Endpoints
+
+### Matérias
+
+-   POST /materias
+-   GET /materias
+-   GET /materias/:id
+-   GET /materias/:id/resumo
+-   PUT /materias/:id
+-   DELETE /materias/:id
+
+### Tarefas
+
+-   POST /tarefas
+-   GET /tarefas
+-   PUT /tarefas/:id
+-   DELETE /tarefas/:id
+-   GET /tarefas/atrasadas
+
+------------------------------------------------------------------------
+
