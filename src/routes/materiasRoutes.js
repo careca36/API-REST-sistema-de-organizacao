@@ -1,13 +1,13 @@
-const express = require('express')
-const controller = require('../controllers/materiasController')
+const express = require("express");
+const controller = require("../controllers/materiasController");
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/', controller.criar)
-router.get('/', controller.listar)
-router.get('/:id/resumo', controller.resumo)
-router.get('/:id', controller.buscarPorId)
-router.put('/:id', controller.atualizar)
-router.delete('/:id', controller.deletar)
+router.post("/materias", controller.criar);
+router.get("/materias", controller.listar);
+router.get("/materias/resumo", controller.resumo);
+router.get("/materias/:id", controller.buscarPorId);
+router.put("/materias/:id", controller.atualizar);
+router.delete("/materias/:id", controller.deletar);
 
-module.exports = router
+module.exports = router;

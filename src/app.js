@@ -1,12 +1,12 @@
-const express = require('express')
-const materiasRoutes = require('./routes/materiasRoutes')
-const tarefasRoutes = require('./routes/tarefasRoutes')
+const express = require("express");
 
-const app = express()
+const materiasRoutes = require("./routes/materiasRoutes");
+const tarefasRoutes = require("./routes/tarefasRoutes");
 
-app.use(express.json())
+const app = express();
 
-app.use('/materias', materiasRoutes)
-app.use('/tarefas', tarefasRoutes)
+app.use(express.json());
+app.use(materiasRoutes);
+app.use(tarefasRoutes);
 
-module.exports = app
+module.exports = app;

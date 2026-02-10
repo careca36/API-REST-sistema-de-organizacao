@@ -1,91 +1,124 @@
-const prisma = require('../database/prisma')
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
-exports.criar = async (req, res) => {
-  const { titulo, descricao, dataEntrega, materiaId, status } = req.body
+const statusValidos = ["pendente", "em_andamento", "concluida"];
 
-  if (!titulo || !materiaId || !dataEntrega) {
-    return res.status(400).json({
-      erro: 'titulo, dataEntrega e materiaId são obrigatórios'
-    })
-  }
+module.exports = {
+  async criar(req, res) {
+    try {
+      const { titulo, status, dataEntrega, materiaId } = req.body;
 
-  const tarefa = await prisma.tarefa.create({
-    data: {
-      titulo,
-      descricao,
-      dataEntrega: new Date(dataEntrega),
-      status: status ?? false,
-      materiaId
+      if (!statusValidos.includes(status)) {
+        return res.status(400).json({ error: "Status inválido" });
+      }
+
+      const materiaExiste = await prisma.materia.findUnique({
+        where: { id: Number(materiaId) },
+      });
+
+      if (!materiaExiste) {
+        return res.status(400).json({ error: "materiaId não existe" });
+      }
+
+      const tarefa = await prisma.tarefa.create({
+        data: {
+          titulo,
+          status,
+          dataEntrega: new Date(dataEntrega),
+          materiaId: Number(materiaId),
+        },
+      });
+
+      return res.status(201).json(tarefa);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao criar tarefa" });
     }
-  })
+  },
 
-  return res.status(201).json(tarefa)
-}
-
-exports.listar = async (req, res) => {
-  const tarefas = await prisma.tarefa.findMany({
-    include: { materia: true }
-  })
-
-  return res.json(tarefas)
-}
-
-exports.atualizar = async (req, res) => {
-  const id = Number(req.params.id)
-  const { titulo, descricao, dataEntrega, status } = req.body
-
-  const tarefaExiste = await prisma.tarefa.findUnique({
-    where: { id }
-  })
-
-  if (!tarefaExiste) {
-    return res.status(404).json({ erro: 'Tarefa não encontrada' })
-  }
-
-  const tarefa = await prisma.tarefa.update({
-    where: { id },
-    data: {
-      titulo,
-      descricao,
-      status,
-      dataEntrega: dataEntrega ? new Date(dataEntrega) : undefined
+  async listar(req, res) {
+    try {
+      const tarefas = await prisma.tarefa.findMany({
+        include: { materia: true },
+      });
+      return res.json(tarefas);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao listar tarefas" });
     }
-  })
+  },
 
-  return res.json(tarefa)
-}
+  async buscarPorId(req, res) {
+    try {
+      const { id } = req.params;
 
-exports.deletar = async (req, res) => {
-  const id = Number(req.params.id)
+      const tarefa = await prisma.tarefa.findUnique({
+        where: { id: Number(id) },
+      });
 
-  const tarefaExiste = await prisma.tarefa.findUnique({
-    where: { id }
-  })
+      if (!tarefa) {
+        return res.status(404).json({ error: "Tarefa não encontrada" });
+      }
 
-  if (!tarefaExiste) {
-    return res.status(404).json({ erro: 'Tarefa não encontrada' })
-  }
-
-  await prisma.tarefa.delete({
-    where: { id }
-  })
-
-  return res.status(200).json({
-    mensagem: 'Tarefa deletada com sucesso'
-  })
-}
-
-exports.atrasadas = async (req, res) => {
-  const hoje = new Date()
-
-  const tarefas = await prisma.tarefa.findMany({
-    where: {
-      OR: [
-        { dataEntrega: { lt: hoje } },
-        { status: false }
-      ]
+      return res.json(tarefa);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao buscar tarefa" });
     }
-  })
+  },
 
-  return res.json(tarefas)
-}
+  async atualizar(req, res) {
+    try {
+      const { id } = req.params;
+      const { titulo, status, dataEntrega } = req.body;
+
+      if (status && !statusValidos.includes(status)) {
+        return res.status(400).json({ error: "Status inválido" });
+      }
+
+      const tarefaAtualizada = await prisma.tarefa.update({
+        where: { id: Number(id) },
+        data: {
+          titulo,
+          status,
+          dataEntrega: dataEntrega ? new Date(dataEntrega) : undefined,
+        },
+      });
+
+      return res.json({
+        message: "Tarefa atualizada com sucesso",
+        data: tarefaAtualizada,
+      });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao atualizar tarefa" });
+    }
+  },
+
+  async deletar(req, res) {
+    try {
+      const { id } = req.params;
+
+      await prisma.tarefa.delete({
+        where: { id: Number(id) },
+      });
+
+      return res.json({
+        message: "Tarefa deletada com sucesso",
+      });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao deletar tarefa" });
+    }
+  },
+
+  async atrasadas(req, res) {
+    try {
+      const tarefas = await prisma.tarefa.findMany({
+        where: {
+          dataEntrega: { lt: new Date() },
+          status: { not: "concluida" },
+        },
+      });
+
+      return res.json(tarefas);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao buscar tarefas atrasadas" });
+    }
+  },
+};

@@ -7,19 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  pendente
+  em_andamento
+  concluida
+}
+
 model Materia {
   id        Int      @id @default(autoincrement())
   nome      String
-  descricao String?
+  descricao String
   tarefas   Tarefa[]
 }
 
 model Tarefa {
   id          Int      @id @default(autoincrement())
   titulo      String
-  descricao   String?
-  status      Boolean  @default(false)
+  status      Status   @default(pendente)
   dataEntrega DateTime
   materiaId   Int
+
   materia     Materia  @relation(fields: [materiaId], references: [id])
+
 }

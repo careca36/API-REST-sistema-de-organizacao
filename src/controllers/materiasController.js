@@ -1,93 +1,121 @@
-const prisma = require('../database/prisma')
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
-exports.criar = async (req, res) => {
-  const { nome, descricao } = req.body
+module.exports = {
+  async criar(req, res) {
+    try {
+      const { nome, descricao } = req.body;
 
-  if (!nome) {
-    return res.status(400).json({ erro: 'Nome é obrigatório' })
-  }
+      if (!nome) {
+        return res.status(400).json({ error: "Nome da matéria é obrigatório" });
+      }
 
-  const materia = await prisma.materia.create({
-    data: { nome, descricao }
-  })
+      const materia = await prisma.materia.create({
+        data: { nome, descricao },
+      });
 
-  return res.status(201).json(materia)
-}
+      return res.status(201).json(materia);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao criar matéria" });
+    }
+  },
 
-exports.listar = async (req, res) => {
-  const materias = await prisma.materia.findMany()
-  return res.json(materias)
-}
+  async listar(req, res) {
+    try {
+      const materias = await prisma.materia.findMany({
+        include: { tarefas: true },
+      });
+      return res.json(materias);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao listar matérias" });
+    }
+  },
 
-exports.buscarPorId = async (req, res) => {
-  const id = Number(req.params.id)
+  async buscarPorId(req, res) {
+    try {
+      const { id } = req.params;
 
-  const materia = await prisma.materia.findUnique({
-    where: { id }
-  })
+      const materia = await prisma.materia.findUnique({
+        where: { id: Number(id) },
+        include: { tarefas: true },
+      });
 
-  if (!materia) {
-    return res.status(404).json({ erro: 'Matéria não encontrada' })
-  }
+      if (!materia) {
+        return res.status(404).json({ error: "Matéria não encontrada" });
+      }
 
-  return res.json(materia)
-}
+      return res.json(materia);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao buscar matéria" });
+    }
+  },
 
-exports.atualizar = async (req, res) => {
-  const id = Number(req.params.id)
-  const { nome, descricao } = req.body
+  async atualizar(req, res) {
+    try {
+      const { id } = req.params;
+      const { nome, descricao } = req.body;
 
-  const materiaExiste = await prisma.materia.findUnique({
-    where: { id }
-  })
+      const materiaExiste = await prisma.materia.findUnique({
+        where: { id: Number(id) },
+      });
 
-  if (!materiaExiste) {
-    return res.status(404).json({ erro: 'Matéria não encontrada' })
-  }
+      if (!materiaExiste) {
+        return res.status(404).json({ error: "Matéria não encontrada" });
+      }
 
-  const materia = await prisma.materia.update({
-    where: { id },
-    data: { nome, descricao }
-  })
+      const materiaAtualizada = await prisma.materia.update({
+        where: { id: Number(id) },
+        data: { nome, descricao },
+      });
 
-  return res.json(materia)
-}
+      return res.json({
+        message: "Matéria atualizada com sucesso",
+        data: materiaAtualizada,
+      });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao atualizar matéria" });
+    }
+  },
 
-exports.deletar = async (req, res) => {
-  const id = Number(req.params.id)
+  async deletar(req, res) {
+    try {
+      const { id } = req.params;
 
-  const materiaExiste = await prisma.materia.findUnique({
-    where: { id }
-  })
+      await prisma.materia.delete({
+        where: { id: Number(id) },
+      });
 
-  if (!materiaExiste) {
-    return res.status(404).json({ erro: 'Matéria não encontrada' })
-  }
+      return res.json({
+        message: "Matéria deletada com sucesso",
+      });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao deletar matéria" });
+    }
+  },
 
-  await prisma.materia.delete({
-    where: { id }
-  })
+  async resumo(req, res) {
+    try {
+      const materias = await prisma.materia.findMany({
+        include: { tarefas: true },
+      });
 
-  return res.status(200).json({
-    mensagem: 'Matéria deletada com sucesso'
-  })
-}
+      const resumo = materias.map((m) => {
+        const total = m.tarefas.length;
+        const concluidas = m.tarefas.filter(
+          (t) => t.status === "concluida"
+        ).length;
 
-exports.resumo = async (req, res) => {
-  const id = Number(req.params.id)
+        return {
+          materia: m.nome,
+          total,
+          concluidas,
+          pendentes: total - concluidas,
+        };
+      });
 
-  const materia = await prisma.materia.findUnique({
-    where: { id },
-    include: { tarefas: true }
-  })
-
-  if (!materia) {
-    return res.status(404).json({ erro: 'Matéria não encontrada' })
-  }
-
-  return res.json({
-    materia: materia.nome,
-    totalTarefas: materia.tarefas.length,
-    tarefas: materia.tarefas
-  })
-}
+      return res.json(resumo);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao gerar resumo" });
+    }
+  },
+};
