@@ -1,9 +1,7 @@
 # Desafio Técnico Vitor -- API REST (Sistema de Organização)
 
-Projeto backend desenvolvido utilizando Node.js e Express, com banco de
-dados PostgreSQL, seguindo o padrão API REST.\
-A aplicação permite o gerenciamento de matérias e tarefas, incluindo
-CRUD completo, resumo por matéria e listagem de tarefas atrasadas.
+Projeto backend desenvolvido utilizando Node.js e Express, com banco de dados PostgreSQL, seguindo o padrão API REST.
+A aplicação permite o gerenciamento de matérias e tarefas, incluindo CRUD completo, resumo por matéria e listagem de tarefas atrasadas.
 
 ------------------------------------------------------------------------
 
@@ -14,6 +12,8 @@ CRUD completo, resumo por matéria e listagem de tarefas atrasadas.
 -   JavaScript
 -   PostgreSQL 
 -   Prisma ORM 
+-   Docker
+-   Docker compose
 -   Dotenv
 -   Nodemon
 -   Postman
@@ -42,55 +42,67 @@ CRUD completo, resumo por matéria e listagem de tarefas atrasadas.
     └── README.md
 
 ------------------------------------------------------------------------
+## PRÉ REQUISITOS:
+- docker
+-docker compose
+docker --version
+docker compose version
 
-## Como Executar o Projeto
+ ## Requisitos Técnicos do projeto:
+  # Entidades:
+  -materia
+  -tarefa
+  -uma tarefa pode ter multiplas tarefas
+  
+  ## Regras do Negócio:
+- Nome e status da matéria Obrigatório.
+- Status da tarefa deve ser válido: em_andamento, pendente, concluida
+-materiaID deve existir ao criar uma tarefa
+- tarefa atrasada deve ser um endpoint extra
 
-### 1. Instalar dependências
+## Como Executar o Projeto:
 
-    npm install
+# -1 Clonar o repositório:
+git clone ...
+cd API-REST-sistema-de-organizacao
 
-### 2. Configurar banco de dados
+# -2 Configurar o .env:
+DATABASE_URL="postgresql://postgres:12345678@db:5432/organizacao"
+PORT=3000
 
-Criar banco PostgreSQL:
+# -3 Subir os containers :
+docker compose up --build
 
-    CREATE DATABASE organizacao;
+# Após isso a API ficara disponível em http://localhost:3000 
 
-Arquivo `.env`:
+# END POINTS DISPONÍVEIS:
+# Materias:
+-POST /materias
+-GET /materias
+-GET /materias/:id
+-GET /materias/:id/resumo
+-PUT /materias/:id
+-DELETE /materias/:id
 
-    DATABASE_URL="postgresql://postgres:12345678@localhost:5432/organizacao"
-    PORT=3000
+EXEMPLO DE COMO CRIAR MATÉRIA
+-> {
+    "nome": "nome da materia",
+    "descricao": "teste" 
+}
 
-### 3. Prisma
+# Tarefas:
+-POST /tarefas
+-GET /tarefas
+-GET /tarefas/:id
+-GET tarefas/atrasadas
+-PUT /tarefas/:id
+-DELETE /tarefas/:id
 
-    npx prisma generate
-    npx prisma migrate dev --name init
-
-### 4. Executar servidor
-
-    npm run dev
-
-Servidor disponível em `http://localhost:3000`
-
-------------------------------------------------------------------------
-
-## Endpoints
-
-### Matérias
-
--   POST /materias
--   GET /materias
--   GET /materias/:id
--   GET /materias/:id/resumo
--   PUT /materias/:id
--   DELETE /materias/:id
-
-### Tarefas
-
--   POST /tarefas
--   GET /tarefas
--   PUT /tarefas/:id
--   DELETE /tarefas/:id
--   GET /tarefas/atrasadas
-
-------------------------------------------------------------------------
-
+EXEMPLO DE COMO CRIAR TAREFAS
+->  {
+  "titulo": "Lista 1",
+  "descricao": "Exercícios",
+  "dataEntrega": "2026-02-20",
+  "status": "pendente",
+  "materiaId": 1
+}
