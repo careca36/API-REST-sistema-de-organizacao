@@ -57,7 +57,7 @@ Criar banco PostgreSQL:
 
 Arquivo `.env`:
 
-    DATABASE_URL="postgresql://usuario:12345678@localhost:5432/organizacao"
+    DATABASE_URL="postgresql://postgres:12345678@localhost:5432/organizacao"
     PORT=3000
 
 ### 3. Prisma
